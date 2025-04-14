@@ -5,7 +5,7 @@ import { Box, TextField, Button, Typography, Link } from "@mui/material";
 import GoogleIcon from "@mui/icons-material/Google";
 import { AuthLayout } from "../layout/AuthLayout";
 import { useForm } from "../../hooks/useForm";
-import { checkingAuthentication } from "../../store/auth";
+import { checkingAuthentication, startGoogleSignIn } from "../../store/auth";
 
 export const LoginPage = () => {
   const dispatch = useDispatch();
@@ -22,7 +22,7 @@ export const LoginPage = () => {
   };
 
   const onGoogleSignIn = () => {
-    console.log("onGoogleSignIn");
+    dispatch(startGoogleSignIn());
   };
 
   return (
