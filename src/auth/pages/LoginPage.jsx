@@ -1,19 +1,22 @@
 import React, { useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
-import { Box, TextField, Button, Typography, Link } from "@mui/material";
+import { Alert, Box, TextField, Button, Typography, Link } from "@mui/material";
 import GoogleIcon from "@mui/icons-material/Google";
 import { AuthLayout } from "../layout/AuthLayout";
 import { useForm } from "../../hooks/useForm";
-import { checkingAuthentication, startGoogleSignIn } from "../../store/auth";
+import {
+  startGoogleSignIn,
+  startLoginWithEmailPassword,
+} from "../../store/auth";
 
 export const LoginPage = () => {
-  const { status } = useSelector((state) => state.auth);
+  const { status, errorMessage } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   const { email, password, onInputChange } = useForm({
-    email: "maitepv87@gmail.com",
-    password: "12345",
+    email: "",
+    password: "",
   });
 
   const isAuthenticating = useMemo(() => status == "checking", [status]);
@@ -21,7 +24,7 @@ export const LoginPage = () => {
   const onSubmit = (event) => {
     event.preventDefault();
 
-    dispatch(checkingAuthentication());
+    dispatch(startLoginWithEmailPassword({ email, password }));
   };
 
   const onGoogleSignIn = () => {
@@ -59,6 +62,13 @@ export const LoginPage = () => {
             marginTop: 1,
           }}
         >
+          <Alert
+            severity="error"
+            sx={{ display: !!errorMessage ? "" : "none" }}
+          >
+            {errorMessage}
+          </Alert>
+
           <Button
             disabled={isAuthenticating}
             variant="contained"

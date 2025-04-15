@@ -1,25 +1,56 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { Box, TextField, Button, Typography, Link } from "@mui/material";
-import GoogleIcon from "@mui/icons-material/Google";
+import { Alert, Box, TextField, Button, Typography, Link } from "@mui/material";
 import { AuthLayout } from "../layout/AuthLayout";
 import { useForm } from "../../hooks/useForm";
+import { useDispatch, useSelector } from "react-redux";
+import { startCreatingUserWithEmailPassword } from "../../store/auth";
+import { useMemo } from "react";
+
+const formData = {
+  email: "",
+  password: "",
+  displayName: "",
+};
+
+const formValidations = {
+  email: [(value) => value.includes("@"), "El correo debe de tener una @"],
+  password: [
+    (value) => value.length >= 6,
+    "El password debe de tener más de 6 letras.",
+  ],
+  displayName: [(value) => value.length >= 1, "El nombre es obligatorio."],
+};
 
 export const RegisterPage = () => {
-  const formData = {
-    email: "maitepv87@gmail.com",
-    password: "12345",
-    displayName: "Maite Perez Vento",
-  };
+  const dispatch = useDispatch();
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
-  const { displayName, email, password, onInputChange, formState } = useForm(formData);
+  const { status, errorMessage } = useSelector((state) => state.auth);
+  const isCheckingAuthentication = useMemo(
+    () => status === "checking",
+    [status]
+  );
+
+  const {
+    formState,
+    displayName,
+    email,
+    password,
+    onInputChange,
+    isFormValid,
+    displayNameValid,
+    emailValid,
+    passwordValid,
+  } = useForm(formData, formValidations);
 
   const onSubmit = (event) => {
     event.preventDefault();
+    setFormSubmitted(true);
 
-    // dispatch(checkingAuthentication());
+    if (!isFormValid) return;
 
-    console.log(formState);
+    dispatch(startCreatingUserWithEmailPassword(formState));
   };
 
   return (
@@ -33,6 +64,8 @@ export const RegisterPage = () => {
           name="displayName"
           value={displayName}
           onChange={onInputChange}
+          error={!!displayNameValid && formSubmitted}
+          helperText={displayNameValid}
         />
 
         <TextField
@@ -43,6 +76,8 @@ export const RegisterPage = () => {
           name="email"
           value={email}
           onChange={onInputChange}
+          error={!!emailValid && formSubmitted}
+          helperText={emailValid}
         />
 
         <TextField
@@ -54,6 +89,8 @@ export const RegisterPage = () => {
           name="password"
           value={password}
           onChange={onInputChange}
+          error={!!passwordValid && formSubmitted}
+          helperText={passwordValid}
         />
 
         <Box
@@ -64,7 +101,16 @@ export const RegisterPage = () => {
             marginTop: 1,
           }}
         >
+          
+          <Alert
+            severity="error"
+            sx={{ display: !!errorMessage ? "" : "none" }}
+          >
+            {errorMessage}
+          </Alert>
+
           <Button
+            disabled={isCheckingAuthentication}
             variant="contained"
             color="primary"
             fullWidth
